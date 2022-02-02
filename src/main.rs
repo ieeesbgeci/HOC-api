@@ -13,25 +13,29 @@ use self::models::NewUser;
 async fn main()->std::io::Result<()>{
 	dotenv().ok();
 	// let white_list=env::var("ORIGINS").unwrap();
+	let db_pool=db_handler::init_dbpool();
 	let port=env::var("PORT").unwrap();
-	let host=env::var("HOSt").unwrap();
+	let host=env::var("HOST").unwrap();
 	let ip_port=format!("{}:{}",host,port);	
 	println!("server running on : {}",ip_port);
-	HttpServer::new(| | { 
+	HttpServer::new(move | | { 
 					//test-env cors :)
 					//use white_list env variable to white_list origins in production
                     let cors = Cors::permissive();
                                 //  .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT]);
                     App::new()
                         .wrap(cors)
+						.data(db_pool.clone())
 						.route("/add_data",web::post().to(add_data)) 
+						// .route("/disp_data",web::get().to(disp_db))
+						// .route("/check_data",web::post().to(check_data));
 					})
 					.bind(ip_port)?
 					.run()
 					.await
 }
 
-async fn add_data(_res:web::Json<NewUser>)->Result<web::Json::<Response>>{
+async fn add_data(res:web::Json<NewUser>)->Result<web::Json::<Response>>{
 	let invite_link=std::env::var("INVITE_LINK").unwrap();
 	Ok(web::Json(Response::new(invite_link)))
 }
