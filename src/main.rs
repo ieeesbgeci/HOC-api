@@ -9,11 +9,14 @@ use actix_web::{web,App,HttpServer,Result};
 use actix_cors::Cors;
 use serde::{Serialize};
 use self::models::NewUser;
+use r2d2;
+use diesel::{r2d2::ConnectionManager,PgConnection};
+type DbPool=r2d2::Pool<ConnectionManager<PgConnection>>;
 #[actix_web::main]
 async fn main()->std::io::Result<()>{
 	dotenv().ok();
 	// let white_list=env::var("ORIGINS").unwrap();
-	let db_pool=db_handler::init_dbpool();
+	let db_pool=init_dbpool();
 	let port=env::var("PORT").unwrap();
 	let host=env::var("HOST").unwrap();
 	let ip_port=format!("{}:{}",host,port);	
@@ -35,7 +38,8 @@ async fn main()->std::io::Result<()>{
 					.await
 }
 
-async fn add_data(res:web::Json<NewUser>)->Result<web::Json::<Response>>{
+async fn add_data(db:web::Data<DbPool>,res:web::Json<NewUser>)->Result<web::Json::<Response>>{
+	
 	let invite_link=std::env::var("INVITE_LINK").unwrap();
 	Ok(web::Json(Response::new(invite_link)))
 }
@@ -48,4 +52,10 @@ impl Response{
 	pub fn new(result:String)->Self{
 		Self{result}
 	}
+}
+pub fn init_dbpool()->DbPool{
+	dotenv().ok();
+	let db_url=env::var("DATABASE_URL").unwrap();
+	let conn_manager=ConnectionManager::<PgConnection>::new(db_url);
+	r2d2::Pool::builder().build(conn_manager).unwrap()
 }
