@@ -19,3 +19,7 @@ impl NewUser{
 		Self{uname:name.into(),discord_id:d_id.into()}
 	}
 }
+#[derive(Deserialize)]
+pub struct CheckUser{
+	pub discord_id:String,
+}

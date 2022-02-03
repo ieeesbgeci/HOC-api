@@ -8,7 +8,7 @@ use std::env;
 use actix_web::{web,App,HttpServer,Result};
 use actix_cors::Cors;
 use serde::{Serialize};
-use self::models::NewUser;
+use self::models::{NewUser,CheckUser};
 use r2d2;
 use diesel::{r2d2::ConnectionManager,PgConnection};
 type DbPool=r2d2::Pool<ConnectionManager<PgConnection>>;
@@ -30,8 +30,8 @@ async fn main()->std::io::Result<()>{
                         .wrap(cors)
 						.data(db_pool.clone())
 						.route("/add_data",web::post().to(add_data)) 
-						// .route("/disp_data",web::get().to(disp_db))
-						// .route("/check_data",web::post().to(check_data));
+						.route("/disp_data",web::get().to(disp_data))
+						.route("/check_data",web::post().to(check_data))
 					})
 					.bind(ip_port)?
 					.run()
@@ -44,6 +44,15 @@ async fn add_data(db:web::Data<DbPool>,res:web::Json<NewUser>)->Result<web::Json
 	Ok(web::Json(Response::new(invite_link)))
 }
 
+async fn disp_data(db:web::Data<DbPool>)->Result<web::Json::<Response>>{
+	let invite_link=std::env::var("INVITE_LINK").unwrap();
+	Ok(web::Json(Response::new(invite_link)))
+}
+
+async fn check_data(db:web::Data<DbPool>,res:web::Json<CheckUser>)->Result<web::Json::<Response>>{
+	let invite_link=std::env::var("INVITE_LINK").unwrap();
+	Ok(web::Json(Response::new(invite_link)))
+}
 #[derive(Serialize)]
 pub struct Response{
 	result:String,
