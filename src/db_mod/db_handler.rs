@@ -5,7 +5,7 @@ use super::{
     PoolConn,
 };
 use actix_web::web;
-use diesel::{pg::upsert::excluded,ExpressionMethods, QueryDsl, RunQueryDsl};
+use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use discord_users::dsl::*;
 
 pub async fn add_db(pg_conn: PoolConn, data: web::Json<NewUser>) -> Result<(), ApiError> {
@@ -13,8 +13,7 @@ pub async fn add_db(pg_conn: PoolConn, data: web::Json<NewUser>) -> Result<(), A
     let res = diesel::insert_into(discord_users::table)
         .values(&user)
         .on_conflict(discord_id)
-        .do_update()
-        .set((uname.eq(excluded(uname)),id.eq(id)))
+        .do_nothing()
         .execute(&pg_conn);
     match res {
         Err(err) => Err(ApiError::DbError(err)),
