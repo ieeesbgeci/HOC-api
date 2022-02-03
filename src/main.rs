@@ -10,8 +10,10 @@ use actix_cors::Cors;
 use serde::{Serialize};
 use self::models::{NewUser,CheckUser};
 use r2d2;
-use diesel::{r2d2::ConnectionManager,PgConnection};
+use diesel::{r2d2::{ConnectionManager,PooledConnection},PgConnection};
 type DbPool=r2d2::Pool<ConnectionManager<PgConnection>>;
+pub type PoolConn=PooledConnection<ConnectionManager<PgConnection>>;
+
 #[actix_web::main]
 async fn main()->std::io::Result<()>{
 	dotenv().ok();
@@ -38,18 +40,23 @@ async fn main()->std::io::Result<()>{
 					.await
 }
 
-async fn add_data(db:web::Data<DbPool>,res:web::Json<NewUser>)->Result<web::Json::<Response>>{
-	
+async fn add_data(db_pool:web::Data<DbPool>,res:web::Json<NewUser>)->Result<web::Json::<Response>>{
+	let db_conn=db_pool.get().unwrap();	
+	db_handler::add_db(db_conn, res).await.unwrap_or(());
 	let invite_link=std::env::var("INVITE_LINK").unwrap();
 	Ok(web::Json(Response::new(invite_link)))
 }
 
-async fn disp_data(db:web::Data<DbPool>)->Result<web::Json::<Response>>{
+async fn disp_data(db_pool:web::Data<DbPool>)->Result<web::Json::<Response>>{
+	let db_conn=db_pool.get().unwrap();	
+	db_handler::disp_db(db_conn).await.unwrap_or(());
 	let invite_link=std::env::var("INVITE_LINK").unwrap();
 	Ok(web::Json(Response::new(invite_link)))
 }
 
-async fn check_data(db:web::Data<DbPool>,res:web::Json<CheckUser>)->Result<web::Json::<Response>>{
+async fn check_data(db_pool:web::Data<DbPool>,res:web::Json<CheckUser>)->Result<web::Json::<Response>>{
+	let db_conn=db_pool.get().unwrap();	
+	db_handler::check_db(db_conn,res).await.unwrap_or(());
 	let invite_link=std::env::var("INVITE_LINK").unwrap();
 	Ok(web::Json(Response::new(invite_link)))
 }

@@ -1,13 +1,12 @@
-use super::models::{NewUser,DiscordUsers};
-use super::schema::discord_users;
-use super::error_handler::ApiError;
-use diesel::{QueryDsl,pg::PgConnection,RunQueryDsl,ExpressionMethods};
+use super::{models::{NewUser,DiscordUsers,CheckUser},PoolConn,schema::discord_users,error_handler::ApiError};
+use diesel::{QueryDsl,RunQueryDsl,ExpressionMethods};
 use actix_web::web;
 
-pub async fn add_db(pg_conn:PgConnection,data:web::Json<NewUser>)->Result<(),ApiError>{
+pub async fn add_db(pg_conn:PoolConn,data:web::Json<NewUser>)->Result<(),ApiError>{
 	let user=NewUser::new(&data.uname,&data.discord_id);
 	diesel::insert_into(discord_users::table)	
 	.values(&user)
+	.on_conflict_do_nothing()
 	.execute(&pg_conn)
 	.unwrap();
 	Ok(())
@@ -15,7 +14,7 @@ pub async fn add_db(pg_conn:PgConnection,data:web::Json<NewUser>)->Result<(),Api
 	// .unwrap()
 }
 
-pub async fn disp_db(pg_conn:PgConnection)->Result<(),ApiError>{
+pub async fn disp_db(pg_conn:PoolConn)->Result<(),ApiError>{
 	let result=discord_users::dsl::discord_users
 				.load::<DiscordUsers>(&pg_conn)
 				.unwrap();
@@ -25,7 +24,8 @@ pub async fn disp_db(pg_conn:PgConnection)->Result<(),ApiError>{
 	Ok(())
 }
 
-pub async fn check_db(pg_conn:PgConnection,d_id:String)->Result<(),ApiError>{
+pub async fn check_db(pg_conn:PoolConn,data:web::Json<CheckUser>)->Result<(),ApiError>{
+	let d_id:String=format!("{}",data.discord_id);
 	let result=discord_users::dsl::discord_users
 				.filter(discord_users::dsl::discord_id.eq(d_id))
 				.load::<DiscordUsers>(&pg_conn)
