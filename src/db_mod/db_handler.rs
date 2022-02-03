@@ -44,10 +44,12 @@ pub async fn check_db(
         .load::<DiscordUsers>(&pg_conn);
     match result {
         Ok(val) => {
+            println!("{:?}",val);
+            println!("{}",val.len());
             if val.len() == 0 {
-                Ok(CheckResponse::CheckFlag(true))
-            } else {
                 Ok(CheckResponse::CheckFlag(false))
+            } else {
+                Ok(CheckResponse::CheckFlag(true))
             }
         }
         Err(err) => Err(ApiError::DbError(err)),
