@@ -18,9 +18,9 @@ pub type PoolConn=PooledConnection<ConnectionManager<PgConnection>>;
 async fn main()->std::io::Result<()>{
 	dotenv().ok();
 	// let white_list=env::var("ORIGINS").unwrap();
-	let db_pool=init_dbpool();
-	let port=env::var("PORT").unwrap();
-	let host=env::var("HOST").unwrap();
+	let db_pool=init_dbpool().await;
+	let port=env::var("PORT").expect("Error parsing Port Var");
+	let host=env::var("HOST").expect("Error parsing HOST Var");
 	let ip_port=format!("{}:{}",host,port);	
 	println!("server running on : {}",ip_port);
 	HttpServer::new(move | | { 
@@ -35,29 +35,30 @@ async fn main()->std::io::Result<()>{
 						.route("/disp_data",web::get().to(disp_data))
 						.route("/check_data",web::post().to(check_data))
 					})
-					.bind(ip_port)?
+					.bind(ip_port)
+					.expect("Error binding to Port")
 					.run()
-					.await
+					.await					
 }
 
 async fn add_data(db_pool:web::Data<DbPool>,res:web::Json<NewUser>)->Result<web::Json::<Response>>{
-	let db_conn=db_pool.get().unwrap();	
+	let db_conn=db_pool.get().expect("Error creating Dbconnector");	
 	db_handler::add_db(db_conn, res).await.unwrap_or(());
-	let invite_link=std::env::var("INVITE_LINK").unwrap();
+	let invite_link=std::env::var("INVITE_LINK").expect("Error parsing INVITE_LINK variable");
 	Ok(web::Json(Response::new(invite_link)))
 }
 
 async fn disp_data(db_pool:web::Data<DbPool>)->Result<web::Json::<Response>>{
-	let db_conn=db_pool.get().unwrap();	
+	let db_conn=db_pool.get().expect("Error getting Dbconnector");	
 	db_handler::disp_db(db_conn).await.unwrap_or(());
-	let invite_link=std::env::var("INVITE_LINK").unwrap();
+	let invite_link=std::env::var("INVITE_LINK").expect("Error parsing INVITE_LINK Var");
 	Ok(web::Json(Response::new(invite_link)))
 }
 
 async fn check_data(db_pool:web::Data<DbPool>,res:web::Json<CheckUser>)->Result<web::Json::<Response>>{
-	let db_conn=db_pool.get().unwrap();	
+	let db_conn=db_pool.get().expect("Error creating Dbconnector");	
 	db_handler::check_db(db_conn,res).await.unwrap_or(());
-	let invite_link=std::env::var("INVITE_LINK").unwrap();
+	let invite_link=std::env::var("INVITE_LINK").expect("Error parsing INVITE_LINK Var");
 	Ok(web::Json(Response::new(invite_link)))
 }
 #[derive(Serialize)]
@@ -69,9 +70,9 @@ impl Response{
 		Self{result}
 	}
 }
-pub fn init_dbpool()->DbPool{
+pub async fn init_dbpool()->DbPool{
 	dotenv().ok();
 	let db_url=env::var("DATABASE_URL").unwrap();
 	let conn_manager=ConnectionManager::<PgConnection>::new(db_url);
-	r2d2::Pool::builder().build(conn_manager).unwrap()
+	r2d2::Pool::builder().build(conn_manager).expect("Error building Dbconnector")
 }
