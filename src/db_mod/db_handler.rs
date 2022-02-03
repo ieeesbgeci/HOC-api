@@ -43,8 +43,13 @@ pub async fn check_db(
         .filter(discord_users::dsl::discord_id.eq(d_id))
         .load::<DiscordUsers>(&pg_conn);
     match result {
-        Ok(val) if val.len() == 0 => Ok(CheckResponse::CheckFlag(true)),
-        Ok(_val) => Ok(CheckResponse::CheckFlag(false)),
+        Ok(val) => {
+            if val.len() == 0 {
+                Ok(CheckResponse::CheckFlag(true))
+            } else {
+                Ok(CheckResponse::CheckFlag(false))
+            }
+        }
         Err(err) => Err(ApiError::DbError(err)),
     }
 }
