@@ -1,4 +1,3 @@
-use diesel::result::Error;
 #[derive(Debug)]
 pub enum ApiError {
     ParseError,
