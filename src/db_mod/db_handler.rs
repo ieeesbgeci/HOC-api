@@ -9,7 +9,7 @@ pub async fn add_db(pg_conn:PoolConn,data:web::Json<NewUser>)->Result<(),ApiErro
 	.on_conflict(discord_users::dsl::discord_id)
 	.do_nothing()
 	.execute(&pg_conn)
-	.unwrap();
+	.expect("Error adding data to Db");
 	Ok(())
 	// .get_result(&pg_conn)
 	// .unwrap()
@@ -18,7 +18,7 @@ pub async fn add_db(pg_conn:PoolConn,data:web::Json<NewUser>)->Result<(),ApiErro
 pub async fn disp_db(pg_conn:PoolConn)->Result<(),ApiError>{
 	let result=discord_users::dsl::discord_users
 				.load::<DiscordUsers>(&pg_conn)
-				.unwrap();
+				.expect("Error loading data from Db");
 	for res in result{
 		println!("{:?}",res);
 	}				
@@ -30,7 +30,7 @@ pub async fn check_db(pg_conn:PoolConn,data:web::Json<CheckUser>)->Result<(),Api
 	let result=discord_users::dsl::discord_users
 				.filter(discord_users::dsl::discord_id.eq(d_id))
 				.load::<DiscordUsers>(&pg_conn)
-				.unwrap();
+				.expect("Error checking data from Db");
 	if result.len()	==0{
 		println!("Discord ID not found :)!");
 	}		
