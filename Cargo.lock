@@ -541,6 +541,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "212d0f5754cb6769937f4501cc0e67f4f4483c8d2c3e1e922ee9edbe4ab4c7c0"
 
 [[package]]
+name = "discord-db-api"
+version = "0.1.0"
+dependencies = [
+ "actix-cors",
+ "actix-web",
+ "diesel",
+ "dotenv",
+ "r2d2",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "tokio 1.16.1",
+]
+
+[[package]]
 name = "dotenv"
 version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -883,9 +898,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
-version = "0.2.116"
+version = "0.2.117"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "565dbd88872dbe4cc8a46e527f26483c1d1f7afa6b884a3bd6cd893d4f98da74"
+checksum = "e74d72e0f9b65b5b4ca49a346af3976df0f9c61d550727f349ecd559f251a26c"
 
 [[package]]
 name = "linked-hash-map"
@@ -1735,21 +1750,6 @@ name = "typenum"
 version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dcf81ac59edc17cc8697ff311e8f5ef2d99fcbd9817b34cec66f90b6c3dfd987"
-
-[[package]]
-name = "uc_api"
-version = "0.1.0"
-dependencies = [
- "actix-cors",
- "actix-web",
- "diesel",
- "dotenv",
- "r2d2",
- "serde",
- "serde_derive",
- "serde_json",
- "tokio 1.16.1",
-]
 
 [[package]]
 name = "unicode-bidi"

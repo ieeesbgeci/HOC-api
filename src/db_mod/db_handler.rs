@@ -6,8 +6,8 @@ pub async fn add_db(pg_conn:PoolConn,data:web::Json<NewUser>)->Result<(),ApiErro
 	let user=NewUser::new(&data.uname,&data.discord_id);
 	diesel::insert_into(discord_users::table)	
 	.values(&user)
-	.on_conflict(discord_users::dsl::discord_id)
-	.do_nothing()
+	// .on_conflict(discord_users::dsl::discord_id)
+	// .do_nothing()
 	.execute(&pg_conn)
 	.expect("Error adding data to Db");
 	Ok(())
