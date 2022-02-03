@@ -9,6 +9,7 @@ use actix_web::{web,App,HttpServer,Result};
 use actix_cors::Cors;
 use serde::{Serialize};
 use self::models::{NewUser,CheckUser};
+use error_handler::CheckResponse;
 use r2d2;
 use diesel::{r2d2::{ConnectionManager,PooledConnection},PgConnection};
 type DbPool=r2d2::Pool<ConnectionManager<PgConnection>>;
@@ -32,7 +33,7 @@ async fn main()->std::io::Result<()>{
                         .wrap(cors)
 						.data(db_pool.clone())
 						.route("/add_data",web::post().to(add_data)) 
-						.route("/disp_data",web::get().to(disp_data))
+						// .route("/disp_data",web::get().to(disp_data))
 						.route("/check_data",web::post().to(check_data))
 					})
 					.bind(ip_port)
@@ -48,18 +49,23 @@ async fn add_data(db_pool:web::Data<DbPool>,res:web::Json<NewUser>)->Result<web:
 	Ok(web::Json(Response::new(invite_link)))
 }
 
-async fn disp_data(db_pool:web::Data<DbPool>)->Result<web::Json::<Response>>{
-	let db_conn=db_pool.get().expect("Error getting Dbconnector");	
-	db_handler::disp_db(db_conn).await.unwrap_or(());
-	let invite_link=std::env::var("INVITE_LINK").expect("Error parsing INVITE_LINK Var");
-	Ok(web::Json(Response::new(invite_link)))
-}
+// async fn disp_data(db_pool:web::Data<DbPool>)->Result<web::Json::<Response>>{
+// 	let db_conn=db_pool.get().expect("Error getting Dbconnector");	
+// 	db_handler::disp_db(db_conn).await.unwrap_or(());
+// 	let invite_link=std::env::var("INVITE_LINK").expect("Error parsing INVITE_LINK Var");
+// 	Ok(web::Json(Response::new(invite_link)))
+// }
 
 async fn check_data(db_pool:web::Data<DbPool>,res:web::Json<CheckUser>)->Result<web::Json::<Response>>{
 	let db_conn=db_pool.get().expect("Error creating Dbconnector");	
-	db_handler::check_db(db_conn,res).await.unwrap_or(());
-	let invite_link=std::env::var("INVITE_LINK").expect("Error parsing INVITE_LINK Var");
-	Ok(web::Json(Response::new(invite_link)))
+	let resp=db_handler::check_db(db_conn,res).await;
+	match resp{
+		Ok(CheckResponse::CheckFlag(true))=>Ok(web::Json(Response::new("Id found".into()))),
+		Ok(CheckResponse::CheckFlag(false))=>Ok(web::Json(Response::new("Id not found".into()))),
+		Err(err)=>{println!("[Error]:\n{:?}",err);Ok(web::Json(Response::new("Error processsing request".into())))}
+	}
+	// let invite_link=std::env::var("INVITE_LINK").expect("Error parsing INVITE_LINK Var");
+	
 }
 #[derive(Serialize)]
 pub struct Response{

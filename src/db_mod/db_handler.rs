@@ -1,4 +1,4 @@
-use super::{models::{NewUser,DiscordUsers,CheckUser},PoolConn,schema::discord_users,error_handler::ApiError};
+use super::{models::{NewUser,DiscordUsers,CheckUser},PoolConn,schema::discord_users,error_handler::{ApiError,CheckResponse}};
 use diesel::{QueryDsl,RunQueryDsl,ExpressionMethods};
 use actix_web::web;
 
@@ -15,27 +15,26 @@ pub async fn add_db(pg_conn:PoolConn,data:web::Json<NewUser>)->Result<(),ApiErro
 	// .unwrap()
 }
 
-pub async fn disp_db(pg_conn:PoolConn)->Result<(),ApiError>{
-	let result=discord_users::dsl::discord_users
-				.load::<DiscordUsers>(&pg_conn)
-				.expect("Error loading data from Db");
-	for res in result{
-		println!("{:?}",res);
-	}				
-	Ok(())
-}
+// pub async fn disp_db(pg_conn:PoolConn)->Result<(),ApiError>{
+// 	let result=discord_users::dsl::discord_users
+// 				.load::<DiscordUsers>(&pg_conn)
+// 				.expect("Error loading data from Db");
+// 	for res in result{
+// 		println!("{:?}",res);
+// 	}				
+// 	Ok(())
+// }
 
-pub async fn check_db(pg_conn:PoolConn,data:web::Json<CheckUser>)->Result<(),ApiError>{
+pub async fn check_db(pg_conn:PoolConn,data:web::Json<CheckUser>)->Result<CheckResponse,ApiError>{
 	let d_id:String=format!("{}",data.discord_id);
 	let result=discord_users::dsl::discord_users
 				.filter(discord_users::dsl::discord_id.eq(d_id))
 				.load::<DiscordUsers>(&pg_conn)
 				.expect("Error checking data from Db");
 	if result.len()	==0{
-		println!("Discord ID not found :)!");
+		Ok(CheckResponse::CheckFlag(true))
 	}		
-	for res in result{
-		println!("{:?}",res);
-	}				
-	Ok(())
+	else{				
+	Ok(CheckResponse::CheckFlag(false))
+	}
 }
