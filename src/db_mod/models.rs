@@ -7,18 +7,24 @@ pub struct DiscordUsers {
     pub id: i32,
     pub uname: String,
     pub discord_id: String,
+    pub name:String,
+    pub e_mail:String,
 }
 #[derive(Insertable, Deserialize)]
 #[table_name = "discord_users"]
 pub struct NewUser {
     pub uname: String,
     pub discord_id: String,
+    pub name:String,
+    pub e_mail:String,
 }
 impl NewUser {
-    pub fn new(name: &str, d_id: &str) -> Self {
+    pub fn new(uname: &str, d_id: &str,name:&str,email:&str) -> Self {
         Self {
-            uname: name.into(),
+            uname: uname.into(),
             discord_id: d_id.into(),
+            name:name.into(),
+            e_mail:email.into(),
         }
     }
 }

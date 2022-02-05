@@ -9,7 +9,7 @@ use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use discord_users::dsl::*;
 
 pub async fn add_db(pg_conn: PoolConn, data: web::Json<NewUser>) -> Result<(), ApiError> {
-    let user = NewUser::new(&data.uname, &data.discord_id);
+    let user = NewUser::new(&data.uname, &data.discord_id,&data.name,&data.e_mail);
     let res = diesel::insert_into(discord_users::table)
         .values(&user)
         .on_conflict(discord_id)
