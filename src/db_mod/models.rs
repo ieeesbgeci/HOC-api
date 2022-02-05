@@ -6,7 +6,6 @@ use serde::Deserialize;
 pub struct DiscordUsers {
     pub id: i32,
     pub uname: String,
-    pub discord_id: String,
     pub name:String,
     pub e_mail:String,
 }
@@ -14,15 +13,13 @@ pub struct DiscordUsers {
 #[table_name = "discord_users"]
 pub struct NewUser {
     pub uname: String,
-    pub discord_id: String,
     pub name:String,
     pub e_mail:String,
 }
 impl NewUser {
-    pub fn new(uname: &str, d_id: &str,name:&str,email:&str) -> Self {
+    pub fn new(uname: &str,name:&str,email:&str) -> Self {
         Self {
             uname: uname.into(),
-            discord_id: d_id.into(),
             name:name.into(),
             e_mail:email.into(),
         }
@@ -30,5 +27,5 @@ impl NewUser {
 }
 #[derive(Deserialize)]
 pub struct CheckUser {
-    pub discord_id: String,
+    pub uname: String,
 }

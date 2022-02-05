@@ -9,10 +9,10 @@ use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use discord_users::dsl::*;
 
 pub async fn add_db(pg_conn: PoolConn, data: web::Json<NewUser>) -> Result<(), ApiError> {
-    let user = NewUser::new(&data.uname, &data.discord_id,&data.name,&data.e_mail);
+    let user = NewUser::new(&data.uname, &data.name,&data.e_mail);
     let res = diesel::insert_into(discord_users::table)
         .values(&user)
-        .on_conflict(discord_id)
+        .on_conflict(uname)
         .do_nothing()
         .execute(&pg_conn);
     match res {
@@ -38,9 +38,9 @@ pub async fn check_db(
     pg_conn: PoolConn,
     data: web::Json<CheckUser>,
 ) -> Result<CheckResponse, ApiError> {
-    let d_id: String = format!("{}", data.discord_id);
+    let u_name: String = format!("{}", data.uname);
     let result = discord_users::dsl::discord_users
-        .filter(discord_users::dsl::discord_id.eq(d_id))
+        .filter(discord_users::dsl::uname.eq(u_name))
         .load::<DiscordUsers>(&pg_conn);
     match result {
         Ok(val) if val.len() == 0 => Ok(CheckResponse::CheckFlag(false)),
